@@ -2,10 +2,15 @@ FROM mizzouceri/tomcat-mvn-java11:V1
 MAINTAINER Songjie Wang "wangso@missouri.edu"
 
 # Fix Debian repository issues
-RUN sed -i 's|deb.debian.org/debian buster|deb.debian.org/debian oldoldstable|g' /etc/apt/sources.list && \
-    sed -i 's|security.debian.org/debian-security buster|security.debian.org/debian-security oldoldstable|g' /etc/apt/sources.list
+FROM mizzouceri/tomcat-mvn-java11:V1
 
-RUN apt-get -y update && apt-get -y install lsb-release net-tools nano
+RUN printf '%s\n' \
+    'deb [trusted=yes] http://archive.debian.org/debian buster main' \
+    'deb [trusted=yes] http://archive.debian.org/debian-security buster/updates main' \
+    > /etc/apt/sources.list \
+    && apt-get -o Acquire::Check-Valid-Until=false update \
+    && apt-get -y install --no-install-recommends lsb-release net-tools nano \
+    && rm -rf /var/lib/apt/lists/*
 RUN apt-get -y install default-mysql-server maven
 
 RUN mkdir -p /usr/local/tomcat/webapps/ROOT/js
